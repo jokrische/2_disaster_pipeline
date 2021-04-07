@@ -8,13 +8,17 @@ from nltk.tokenize import word_tokenize
 from flask import Flask
 from flask import render_template, request, jsonify
 from plotly.graph_objs import Bar
-#from sklearn.externals import joblib
+from sklearn.externals import joblib
 from sqlalchemy import create_engine
-import joblib
+
 
 app = Flask(__name__)
 
 def tokenize(text):
+    '''
+    INPUT: text
+    OUTPUT: list of cleaned words of text
+    '''
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
 
@@ -30,19 +34,42 @@ engine = create_engine('sqlite:///../data/disaster_data.db')
 df = pd.read_sql_table('disaster_data', engine)
 
 # load model
-model = joblib.load("../models/model.pkl")
+model = joblib.load("../models/classifier.pkl")
 
 
 # index webpage displays cool visuals and receives user input text for model
 @app.route('/')
 @app.route('/index')
 def index():
+    '''
+    INPUT:
+    OUTPUT: rendered template with data for the graphs
+    '''
     
     # extract data needed for visuals
     # TODO: Below is an example - modify to extract data for your own visuals
+    # Graph 1
+
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
     
+    # Graph 2
+    columns = ['request', 'offer',
+       'aid_related', 'medical_help', 'medical_products', 'search_and_rescue',
+       'security', 'military', 'child_alone', 'water', 'food', 'shelter',
+       'clothing', 'money', 'missing_people', 'refugees', 'death', 'other_aid',
+       'infrastructure_related', 'transport', 'buildings', 'electricity',
+       'tools', 'hospitals', 'shops', 'aid_centers', 'other_infrastructure',
+       'weather_related', 'floods', 'storm', 'fire', 'earthquake', 'cold',
+       'other_weather', 'direct_report']
+    top10_counts = list(df[columns].iloc[:,4:].sum().sort_values(ascending = False).head(10).values)
+    top10_names = list(df[columns].iloc[:,4:].sum().sort_values(ascending = False).head(10).index)
+    
+    
+    # Graph 3
+    
+    weather_counts = df[df['weather_related'] == 1][['floods', 'storm', 'fire', 'earthquake', 'cold', 'other_weather']].sum().values
+    weather_names = df[df['weather_related'] == 1][['floods', 'storm', 'fire', 'earthquake', 'cold', 'other_weather']].sum().index
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
@@ -63,6 +90,42 @@ def index():
                     'title': "Genre"
                 }
             }
+        }, 
+        {
+            'data': [
+                Bar(
+                    x=top10_names,
+                    y=top10_counts
+                )
+            ],
+
+            'layout': {
+                'title': 'Top 10 relation types',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "relation types"
+                }
+            }
+        }, 
+        {
+            'data': [
+                Bar(
+                    x=weather_names,
+                    y=weather_counts
+                )
+            ],
+
+            'layout': {
+                'title': 'Weather topics',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Types of weather messages"
+                }
+            }
         }
     ]
     
@@ -77,6 +140,10 @@ def index():
 # web page that handles user query and displays model results
 @app.route('/go')
 def go():
+    '''
+    INPUT:
+    OUTPUT: renders go.html with the results of the predicted input
+    '''
     # save user input in query
     query = request.args.get('query', '') 
 
