@@ -1,3 +1,10 @@
+### Summary:
+
+In this project we have the disaster_categories.csv and disaster_messages.csv. In this files the messages of disasters and the associated categories are
+stored. This data is pre processed and stored in a sql database. With the data in the database a model is trained to get the categories of a disaster
+message. As last step a html webpage is created. On that webpage you'll find some insights of the data and a textbox where you can input a message and
+get the associated categories.
+
 ### Instructions:
 1. Run the following commands in the project's root directory to set up your database and model.
 
