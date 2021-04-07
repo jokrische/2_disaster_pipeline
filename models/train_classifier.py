@@ -25,8 +25,9 @@ import pickle
 
 def load_data(database_filepath):
     '''
-    Input: filepath of SQL database
-    Output: Input variables for model training X, Y and categorie_names
+    INPUT: filepath of database
+    OUTPUT: X: textmessages from the dataframe, Y: column names, categorie_names: 
+    categories names from the dataframe
     '''
     CONNECTION_STRING = f"sqlite:///{database_filepath}"
     engine = create_engine(CONNECTION_STRING)
@@ -40,8 +41,8 @@ def load_data(database_filepath):
 
 def tokenize(text):
     '''
-    Input: text
-    Output: tokenized text
+    INPUT: text
+    OUTPUT: clean_tokens: list with cleaned words of text
     '''
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
@@ -55,7 +56,8 @@ def tokenize(text):
 
 def build_model():
     '''
-    Output: model with it's parameter settings
+    INPUT: 
+    OUTPUT: cv: GridSearch pipeline and parameters
     '''
     pipeline = Pipeline([('vect', CountVectorizer(tokenizer = tokenize, max_df = 0.5)),
                      ('tfidf', TfidfTransformer()),
@@ -77,30 +79,24 @@ def build_model():
 
 def evaluate_model(model, X_test, Y_test, category_names):
     '''
-    Input: model, test_data and category names
-    Output: prints classification report for each column
+    INPUT: model, X_test, Y_test, categorie_names
+    OUTPUT: printed classification report of model
     '''
     y_pred = model.predict(X_test)
-    #print(y_pred, Y_test)
-    #y_pred = pd.Dataframe(data = y_pred, columns = categorie_names)
-    #for col in category_names:
-    #    print(classification_report(Y_test.loc[:,col], y_pred.loc[:,col]))
+    for col in category_names:
+        print(classification_report(y_test.iloc[:,col], y_pred[:,col]))
 
 
 def save_model(model, model_filepath):
     '''
-    Input: model and path where model should be stored
-    Output: model stored as pickle file
+    INPUT: model, modelfilepath (with .pkl ending)
+    OUTPUT:
     '''
     pickle.dump(model, open(model_filepath, 'wb'))
 
 
 
 def main():
-    '''
-    loads the data, splits test and train data, builds the model, evaluates the model and saves the model
-    Output: saved model
-    '''
     if len(sys.argv) == 3:
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
