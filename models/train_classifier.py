@@ -83,8 +83,13 @@ def evaluate_model(model, X_test, Y_test, category_names):
     OUTPUT: printed classification report of model
     '''
     y_pred = model.predict(X_test)
-    for col in category_names:
-        print(classification_report(y_test.iloc[:,col], y_pred[:,col]))
+    for ix, col in enumerate(category_names):
+        print(col)
+        print(classification_report(Y_test[col], Y_pred[:,ix]))
+
+    
+    acc = (Y_pred == Y_test).mean().mean()
+    print(f"Accuracy Overall: {acc}")
 
 
 def save_model(model, model_filepath):
