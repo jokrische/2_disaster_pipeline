@@ -4,6 +4,10 @@ from sqlalchemy import create_engine
 
 
 def load_data(messages_filepath, categories_filepath):
+    '''
+    INPUT: filepath of messages.csv, filepath of categories.csv
+    OUTPUT: merged Dataframe
+    '''
     messages = pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
     df = messages.merge(categories, on = 'id') 
@@ -11,6 +15,10 @@ def load_data(messages_filepath, categories_filepath):
 
 
 def clean_data(df):
+    '''
+    INPUT: dataframe
+    OUTPUT: cleaned dataframe: categories as columns, no duplicates
+    '''
     categories = df['categories'].str.split(";",expand=True)
     row = categories.loc[0]
     category_colnames =row.str[:-2]
@@ -19,7 +27,7 @@ def clean_data(df):
     for column in categories:
         # set each value to be the last character of the string
         categories[column] = categories[column].str[-1]
-
+        categories[column] = categories[column].str.replace("2", "1")
         # convert column from string to numeric
         categories[column] = categories[column].astype(int)
         
@@ -31,6 +39,10 @@ def clean_data(df):
 
 
 def save_data(df, database_filename):
+    '''
+    INPUT: dataframe, name of database
+    OUTPUT: dataframe is stored to database
+    '''
     CONNECTION_STRING = f"sqlite:///{database_filename}"
     engine = create_engine(CONNECTION_STRING)
     if not engine.dialect.has_table(engine,'disaster_data'):
@@ -38,6 +50,10 @@ def save_data(df, database_filename):
 
 
 def main():
+    '''
+    INPUT: messages_filepath, categories_filepath, database_filepath
+    OUTPUT: calls functions load_data, clean_data and save_data
+    '''
     if len(sys.argv) == 4:
 
         messages_filepath, categories_filepath, database_filepath = sys.argv[1:]
